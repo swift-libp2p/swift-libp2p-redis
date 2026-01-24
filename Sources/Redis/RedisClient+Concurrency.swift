@@ -17,7 +17,7 @@
 //
 
 import Foundation
-import RediStack
+@preconcurrency import RediStack
 
 extension RedisClient {
     /// Gets the provided key as a decodable type.
@@ -56,6 +56,28 @@ extension RedisClient {
         ).get()
     }
 
+    /// Removes the specified keys. A key is ignored if it does not exist.
+    ///
+    /// [https://redis.io/commands/del](https://redis.io/commands/del)
+    /// - Parameter keys: A list of keys to delete from the database.
+    /// - Returns: The number of keys deleted from the database.
+    public func delete(
+        _ keys: [RedisKey]
+    ) async throws -> Int {
+        try await self.delete(keys).get()
+    }
+
+    /// Removes the specified keys. A key is ignored if it does not exist.
+    ///
+    /// [https://redis.io/commands/del](https://redis.io/commands/del)
+    /// - Parameter keys: A list of keys to delete from the database.
+    /// - Returns: The number of keys deleted from the database.
+    public func delete(
+        _ keys: RedisKey...
+    ) async throws -> Int {
+        try await self.delete(keys).get()
+    }
+
     /// Checks the existence of the provided keys in the database.
     ///
     /// [https://redis.io/commands/exists](https://redis.io/commands/exists)
@@ -82,7 +104,10 @@ extension RedisClient {
     ///     - key: The key to set the expiration on.
     ///     - timeout: The time from now the key will expire at.
     /// - Returns: `true` if the expiration was set.
-    public func expire(_ key: RedisKey, after timeout: TimeAmount) async throws
+    public func expire(
+        _ key: RedisKey,
+        after timeout: TimeAmount
+    ) async throws
         -> Bool
     {
         try await self.expire(key, after: timeout).get()
