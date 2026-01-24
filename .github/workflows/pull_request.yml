@@ -79,11 +79,3 @@ jobs:
       # Test in debug mode
       - name: Test Debug
         run: swift test
-#on:
-#  pull_request:
-#    types: [opened, reopened, synchronize]
-#
-#jobs:
-#  tests:
-#    name: PR
-#    uses: swift-libp2p/github-workflows/.github/workflows/pull_request.yml@main
