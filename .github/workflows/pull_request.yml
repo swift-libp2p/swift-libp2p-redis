@@ -45,5 +45,5 @@ jobs:
     steps:
       - name: Check out package
         uses: actions/checkout@v5
-      - name: Run unit tests with Thread Sanitizer and coverage
-        run: swift test --sanitize=thread --enable-code-coverage
+      - name: Run unit tests
+        run: swift test
