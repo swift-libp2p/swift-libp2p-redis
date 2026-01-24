@@ -5,6 +5,13 @@ on:
     types: [opened, reopened, synchronize, labeled, ready_for_review]
   workflow_dispatch:
 
+env:
+  LOG_LEVEL: info
+  REDIS_HOSTNAME: redis
+  REDIS_PORT: 6379
+  REDIS_HOSTNAME_2: redis-2
+  REDIS_PORT_2: 6379
+
 jobs:
   soundness:
     name: Soundness
