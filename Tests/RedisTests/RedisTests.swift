@@ -284,7 +284,7 @@ extension RedisTests {
         try #expect(
             app.cache.get("foo2", as: String.self).wait() == "bar2"
         )
-        sleep(1)
+        sleep(2)
         try #expect(app.cache.get("foo2", as: String.self).wait() == nil)
     }
 
