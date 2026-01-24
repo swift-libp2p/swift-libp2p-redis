@@ -34,8 +34,7 @@ extension Application {
         }
 
         @usableFromInline
-        internal func pool(for eventLoop: any EventLoop) -> RedisConnectionPool
-        {
+        internal func pool(for eventLoop: any EventLoop) -> RedisConnectionPool {
             self.application.redisStorage.pool(for: eventLoop, id: self.id)
         }
     }
@@ -53,7 +52,10 @@ extension Application.Redis: RedisClient {
             .logging(to: logger)
     }
 
-    public func send(command: String, with arguments: [RESPValue])
+    public func send(
+        command: String,
+        with arguments: [RESPValue]
+    )
         -> EventLoopFuture<RESPValue>
     {
         self.application.redis(self.id)
@@ -79,7 +81,9 @@ extension Application.Redis: RedisClient {
             )
     }
 
-    public func unsubscribe(from channels: [RedisChannelName])
+    public func unsubscribe(
+        from channels: [RedisChannelName]
+    )
         -> EventLoopFuture<Void>
     {
         self.application.redis(self.id)
@@ -122,10 +126,10 @@ extension Application.Redis {
     public func withBorrowedConnection<Result>(
         _ operation: @escaping (any RedisClient) -> EventLoopFuture<Result>
     ) -> EventLoopFuture<Result> {
-        return self.application.redis(self.id)
+        self.application.redis(self.id)
             .pool(for: self.eventLoop)
             .leaseConnection {
-                return operation($0.logging(to: self.application.logger))
+                operation($0.logging(to: self.application.logger))
             }
     }
 }

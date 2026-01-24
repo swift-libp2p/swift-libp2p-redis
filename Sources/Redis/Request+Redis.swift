@@ -47,7 +47,10 @@ extension Request.Redis: RedisClient {
             .logging(to: logger)
     }
 
-    public func send(command: String, with arguments: [RESPValue])
+    public func send(
+        command: String,
+        with arguments: [RESPValue]
+    )
         -> EventLoopFuture<RESPValue>
     {
         self.request.application.redis(self.id)
@@ -73,7 +76,9 @@ extension Request.Redis: RedisClient {
             )
     }
 
-    public func unsubscribe(from channels: [RedisChannelName])
+    public func unsubscribe(
+        from channels: [RedisChannelName]
+    )
         -> EventLoopFuture<Void>
     {
         self.request.application.redis(self.id)
@@ -116,10 +121,10 @@ extension Request.Redis {
     public func withBorrowedClient<Result>(
         _ operation: @escaping (any RedisClient) -> EventLoopFuture<Result>
     ) -> EventLoopFuture<Result> {
-        return self.request.application.redis(self.id)
+        self.request.application.redis(self.id)
             .pool(for: self.eventLoop)
             .leaseConnection {
-                return operation($0.logging(to: self.request.logger))
+                operation($0.logging(to: self.request.logger))
             }
     }
 }

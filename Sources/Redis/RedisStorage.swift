@@ -73,7 +73,10 @@ final class RedisStorage: Sendable {
         Set(self.box.withLockedValue { $0.configurations.keys })
     }
 
-    func pool(for eventLoop: any EventLoop, id redisID: RedisID)
+    func pool(
+        for eventLoop: any EventLoop,
+        id redisID: RedisID
+    )
         -> RedisConnectionPool
     {
         let key = PoolKey(eventLoopKey: eventLoop.key, redisID: redisID)

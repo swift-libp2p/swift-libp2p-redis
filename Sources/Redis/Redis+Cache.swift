@@ -143,7 +143,10 @@ private struct RedisCache<
     let decoder: FakeSendable<CacheDecoder>
     let client: any RedisClient
 
-    func get<T: Decodable>(_ key: String, as type: T.Type) -> EventLoopFuture<
+    func get<T: Decodable>(
+        _ key: String,
+        as type: T.Type
+    ) -> EventLoopFuture<
         T?
     > {
         self.client.get(RedisKey(key), as: CacheDecoder.Input.self)
@@ -176,8 +179,7 @@ private struct RedisCache<
             }
     }
 
-    func set<T: Encodable>(_ key: String, to value: T?) -> EventLoopFuture<Void>
-    {
+    func set<T: Encodable>(_ key: String, to value: T?) -> EventLoopFuture<Void> {
         self.set(key, to: value, expiresIn: nil)
     }
 
