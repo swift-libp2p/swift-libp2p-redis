@@ -288,34 +288,34 @@ extension RedisTests {
         try #expect(app.cache.get("foo2", as: String.self).wait() == nil)
     }
 
-    //    @Test func testCacheAsync() async throws {
-    //        let app = try await Application.make(peerID: .ephemeral())
-    //
-    //        app.redis.configuration = redisConfig
-    //        app.caches.use(.redis)
-    //        try await app.startup()
-    //
-    //        do {
-    //            await #expect(throws: Never.self) {
-    //                try await app.redis.send(command: "DEL", with: [.init(from: "foo")])
-    //            }
-    //            try await #expect(app.cache.get("foo", as: String.self) == nil)
-    //            try await app.cache.set("foo", to: "bar")
-    //            try await #expect(app.cache.get("foo", as: String.self) == "bar")
-    //
-    //            // Test expiration
-    //            try await app.cache.set("foo2", to: "bar2", expiresIn: .seconds(1))
-    //            try await #expect(
-    //                app.cache.get("foo2", as: String.self) == "bar2"
-    //            )
-    //            try await Task.sleep(for: .seconds(1))
-    //            try await #expect(app.cache.get("foo2", as: String.self) == nil)
-    //        } catch {
-    //            Issue.record(error)
-    //        }
-    //
-    //        try await app.asyncShutdown()
-    //    }
+    @Test func testCacheAsync() async throws {
+        let app = try await Application.make(peerID: .ephemeral())
+
+        app.redis.configuration = redisConfig
+        app.caches.use(.redis)
+        try await app.startup()
+
+        do {
+            await #expect(throws: Never.self) {
+                try await app.redis.send(command: "DEL", with: [.init(from: "foo")])
+            }
+            try await #expect(app.cache.get("foo", as: String.self) == nil)
+            try await app.cache.set("foo", to: "bar")
+            try await #expect(app.cache.get("foo", as: String.self) == "bar")
+
+            // Test expiration
+            try await app.cache.set("foo2", to: "bar2", expiresIn: .seconds(1))
+            try await #expect(
+                app.cache.get("foo2", as: String.self) == "bar2"
+            )
+            try await Task.sleep(for: .seconds(1))
+            try await #expect(app.cache.get("foo2", as: String.self) == nil)
+        } catch {
+            Issue.record(error)
+        }
+
+        try await app.asyncShutdown()
+    }
 
     @Test func testCacheCustomCoders() throws {
         let app = Application()
