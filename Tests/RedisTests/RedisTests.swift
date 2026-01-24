@@ -26,7 +26,7 @@ extension String {
     var int: Int? { Int(self) }
 }
 
-@Suite("Redis Tests")
+@Suite("Redis Tests", .serialized)
 struct RedisTests {
     var redisConfig: RedisConfiguration!
 

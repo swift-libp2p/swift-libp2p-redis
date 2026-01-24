@@ -27,7 +27,7 @@ extension RedisID {
     fileprivate static let two: RedisID = "two"
 }
 
-@Suite("Multiple Redis Tests")
+@Suite("Multiple Redis Tests", .serialized)
 struct MultipleRedisTests {
 
     var redisConfig: RedisConfiguration!
