@@ -110,7 +110,7 @@ Let's make this code better together! 🤝
 
 ## Credits
 
-- [Vapr Redis](https://github.com/vapor/redis) 
+- [Vapor Redis](https://github.com/vapor/redis) 
 - [RediStack](https://github.com/swift-server/RediStack) 
 - [Redis](https://redis.io)
 
