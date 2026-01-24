@@ -10,7 +10,6 @@ jobs:
     name: Soundness
     uses: swiftlang/github-workflows/.github/workflows/soundness.yml@main
     with:
-      api_breakage_check_enabled: ${{ !contains(github.event.pull_request.labels.*.name, 'breaking-change') && inputs.api_breakage_check_enabled }}
-      api_breakage_check_allowlist_path: ${{ inputs.api_breakage_check_allowlist_path }}
+      api_breakage_check_enabled: ${{ !contains(github.event.pull_request.labels.*.name, 'breaking-change') }}
       unacceptable_language_check_word_list: "blacklist whitelist slave sane sanity insane insanity kill killed killing hang hung hanged hanging"
       license_header_check_project_name: "swift-libp2p"
