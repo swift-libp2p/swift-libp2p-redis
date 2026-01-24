@@ -12,7 +12,7 @@ jobs:
     with:
       api_breakage_check_enabled: ${{ !contains(github.event.pull_request.labels.*.name, 'breaking-change') }}
       license_header_check_project_name: "swift-libp2p"
-  
+
   test-linux:
     needs: soundness
     name: Tests-Linux
