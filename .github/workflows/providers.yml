@@ -10,4 +10,4 @@ jobs:
     uses: swift-libp2p/github-workflows/.github/workflows/providers.yml@main
     with:
       # Change me! Add this package's direct dependents here
-      dependents: "[\"swift-libp2p/swift-libp2p\"]"
+      dependents: "[]"
