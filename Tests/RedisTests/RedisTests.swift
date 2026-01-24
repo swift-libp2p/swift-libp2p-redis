@@ -55,6 +55,22 @@ extension RedisTests {
         #expect((info.string ?? "").contains("redis_version"))
     }
 
+    @Test func testApplicationRedisAsync() async throws {
+        let app = try await Application.make(peerID: .ephemeral())
+
+        app.redis.configuration = redisConfig
+        try await app.startup()
+
+        do {
+            let info = try await app.redis.send(command: "INFO")
+            #expect((info.string ?? "").contains("redis_version"))
+        } catch {
+            Issue.record(error)
+        }
+
+        try await app.asyncShutdown()
+    }
+
     //func testRouteHandlerRedis() throws {
     //    let app = Application()
     //    defer { app.shutdown() }
@@ -117,6 +133,41 @@ extension RedisTests {
         let _ = try app.redis.delete(["hello"]).wait()
     }
 
+    @Test func testCodableAsync() async throws {
+        let app = try await Application.make(peerID: .ephemeral())
+
+        app.redis.configuration = redisConfig
+        try await app.startup()
+
+        struct Hello: Codable {
+            var message: String
+            var array: [Int]
+            var dict: [String: Bool]
+        }
+
+        let hello = Hello(
+            message: "world",
+            array: [1, 2, 3],
+            dict: ["yes": true, "false": false]
+        )
+        do {
+            try await app.redis.set("hello", toJSON: hello)
+
+            let get = try await app.redis.get("hello", asJSON: Hello.self)
+            #expect(get?.message == "world")
+            #expect(get?.array.first == 1)
+            #expect(get?.array.last == 3)
+            #expect(get?.dict["yes"] == true)
+            #expect(get?.dict["false"] == false)
+
+            let _ = try await app.redis.delete(["hello"])
+        } catch {
+            Issue.record(error)
+        }
+
+        try await app.asyncShutdown()
+    }
+
     //func testRequestConnectionLeasing() throws {
     //    let app = Application()
     //    defer { app.shutdown() }
@@ -152,7 +203,7 @@ extension RedisTests {
 
         let result = try app.redis
             .withBorrowedConnection { client in
-                return client.send(command: "MULTI")
+                client.send(command: "MULTI")
                     .flatMap { _ in client.send(command: "PING") }
                     .flatMap { queuedResponse -> EventLoopFuture<RESPValue> in
                         #expect(queuedResponse.string == "QUEUED")
@@ -235,6 +286,35 @@ extension RedisTests {
         )
         sleep(1)
         try #expect(app.cache.get("foo2", as: String.self).wait() == nil)
+    }
+
+    @Test func testCacheAsync() async throws {
+        let app = try await Application.make(peerID: .ephemeral())
+
+        app.redis.configuration = redisConfig
+        app.caches.use(.redis)
+        try await app.startup()
+
+        do {
+            await #expect(throws: Never.self) {
+                try await app.redis.send(command: "DEL", with: [.init(from: "foo")])
+            }
+            try await #expect(app.cache.get("foo", as: String.self) == nil)
+            try await app.cache.set("foo", to: "bar")
+            try await #expect(app.cache.get("foo", as: String.self) == "bar")
+
+            // Test expiration
+            try await app.cache.set("foo2", to: "bar2", expiresIn: .seconds(1))
+            try await #expect(
+                app.cache.get("foo2", as: String.self) == "bar2"
+            )
+            try await Task.sleep(for: .seconds(1))
+            try await #expect(app.cache.get("foo2", as: String.self) == nil)
+        } catch {
+            Issue.record(error)
+        }
+
+        try await app.asyncShutdown()
     }
 
     @Test func testCacheCustomCoders() throws {
