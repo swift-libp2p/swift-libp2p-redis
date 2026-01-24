@@ -1,9 +1,5 @@
 name: Pull Request
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-  
 on:
   pull_request:
     types: [opened, reopened, synchronize, labeled, ready_for_review]
@@ -21,7 +17,33 @@ jobs:
     name: Soundness
     uses: swiftlang/github-workflows/.github/workflows/soundness.yml@main
     with:
-      api_breakage_check_enabled: ${{ !contains(github.event.pull_request.labels.*.name, 'breaking-change') && inputs.api_breakage_check_enabled }}
-      api_breakage_check_allowlist_path: ${{ inputs.api_breakage_check_allowlist_path }}
-      unacceptable_language_check_word_list: "blacklist whitelist slave sane sanity insane insanity kill killed killing hang hung hanged hanging"
+      api_breakage_check_enabled: ${{ !contains(github.event.pull_request.labels.*.name, 'breaking-change') }}
       license_header_check_project_name: "swift-libp2p"
+
+  test-linux:
+    needs: soundness
+    name: Tests-Linux
+    if: ${{ !(github.event.pull_request.draft || false) }}
+    strategy:
+      fail-fast: false
+      matrix:
+        container:
+          - swift:6.0-noble
+          - swift:6.1-noble
+          - swiftlang/swift:nightly-6.2-noble
+          - swiftlang/swift:nightly-main-noble
+        redis:
+          - redis:7
+          - redis:8
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
+    services:
+      redis:
+        image: ${{ matrix.redis }}
+      redis-2:
+        image: ${{ matrix.redis }}
+    steps:
+      - name: Check out package
+        uses: actions/checkout@v5
+      - name: Run unit tests with Thread Sanitizer and coverage
+        run: swift test --sanitize=thread --enable-code-coverage
