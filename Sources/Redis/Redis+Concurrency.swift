@@ -19,10 +19,13 @@
 import Foundation
 import LibP2P
 import NIOCore
-import RediStack
+@preconcurrency import RediStack
 
 extension Application.Redis {
-    public func send(command: String, with arguments: [RESPValue]) async throws
+    public func send(
+        command: String,
+        with arguments: [RESPValue] = []
+    ) async throws
         -> RESPValue
     {
         try await self.application.redis(self.id)
@@ -85,7 +88,10 @@ extension Application.Redis {
 }
 
 extension Request.Redis {
-    public func send(command: String, with arguments: [RESPValue]) async throws
+    public func send(
+        command: String,
+        with arguments: [RESPValue] = []
+    ) async throws
         -> RESPValue
     {
         try await self.request.application.redis(self.id)
