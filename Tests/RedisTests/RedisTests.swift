@@ -32,11 +32,19 @@ struct RedisTests {
 
     init() throws {
         #expect(isLoggingConfigured)
+        #if os(Linux)
         redisConfig = try RedisConfiguration(
             hostname: Environment.get("REDIS_HOSTNAME") ?? "localhost",
             port: Environment.get("REDIS_PORT")?.int ?? 6379,
             pool: .init(connectionRetryTimeout: .milliseconds(100))
         )
+        #else
+        redisConfig = try RedisConfiguration(
+            hostname: "localhost",
+            port: 6379,
+            pool: .init(connectionRetryTimeout: .milliseconds(100))
+        )
+        #endif
     }
 
 }
