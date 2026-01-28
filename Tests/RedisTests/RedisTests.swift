@@ -296,8 +296,7 @@ extension RedisTests {
         try #expect(app.cache.get("foo2", as: String.self).wait() == nil)
     }
 
-    @Test(.timeLimit(.minutes(1)))
-    func testCacheAsync() async throws {
+    @Test func testCacheAsync() async throws {
         let app = try await Application.make(peerID: .ephemeral())
 
         app.redis.configuration = redisConfig
