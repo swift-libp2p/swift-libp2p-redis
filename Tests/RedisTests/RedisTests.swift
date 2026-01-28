@@ -372,7 +372,7 @@ extension RedisTests {
             let rawValue = try #require(
                 try await app.redis.get("test", asJSON: String.self)
             )
-            #expect(rawValue == #""\#(isoDate)""#)
+            #expect(rawValue == isoDate)
             let value = try #require(
                 try await app.cache.get("test", as: Date.self)
             )
