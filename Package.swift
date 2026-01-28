@@ -50,7 +50,7 @@ let package = Package(
         .testTarget(
             name: "RedisTests",
             dependencies: [
-                .target(name: "Redis"),
+                .target(name: "Redis")
             ],
             swiftSettings: [
                 .enableExperimentalFeature("StrictConcurrency=complete"),

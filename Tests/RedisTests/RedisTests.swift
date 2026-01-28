@@ -26,17 +26,25 @@ extension String {
     var int: Int? { Int(self) }
 }
 
-@Suite("Redis Tests")
+@Suite("Redis Tests", .serialized)
 struct RedisTests {
     var redisConfig: RedisConfiguration!
 
     init() throws {
         #expect(isLoggingConfigured)
+        #if os(Linux)
         redisConfig = try RedisConfiguration(
             hostname: Environment.get("REDIS_HOSTNAME") ?? "localhost",
             port: Environment.get("REDIS_PORT")?.int ?? 6379,
             pool: .init(connectionRetryTimeout: .milliseconds(100))
         )
+        #else
+        redisConfig = try RedisConfiguration(
+            hostname: "localhost",
+            port: 6379,
+            pool: .init(connectionRetryTimeout: .milliseconds(100))
+        )
+        #endif
     }
 
 }
@@ -284,7 +292,7 @@ extension RedisTests {
         try #expect(
             app.cache.get("foo2", as: String.self).wait() == "bar2"
         )
-        sleep(1)
+        sleep(2)
         try #expect(app.cache.get("foo2", as: String.self).wait() == nil)
     }
 
@@ -344,6 +352,38 @@ extension RedisTests {
         #expect(value == date)
     }
 
+    @Test func testCacheCustomCoders_Async() async throws {
+        let app = try await Application.make(peerID: .ephemeral())
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        app.redis.configuration = redisConfig
+        app.caches.use(.redis(encoder: encoder, decoder: decoder))
+        try await app.startup()
+
+        do {
+            let date = Date(timeIntervalSince1970: 10_000_000_000)
+            let isoDate = ISO8601DateFormatter().string(from: date)
+
+            try await app.cache.set("test", to: date)
+            let rawValue = try #require(
+                try await app.redis.get("test", asJSON: String.self)
+            )
+            #expect(rawValue == isoDate)
+            let value = try #require(
+                try await app.cache.get("test", as: Date.self)
+            )
+            #expect(value == date)
+        } catch {
+            Issue.record(error)
+        }
+
+        try await app.asyncShutdown()
+    }
+
     @Test func testRedisClientCustomCoders() throws {
         let app = Application()
         defer { app.shutdown() }
@@ -370,6 +410,38 @@ extension RedisTests {
                 .wait()
         )
         #expect(value == date)
+    }
+
+    @Test func testRedisClientCustomCoders_Async() async throws {
+        let app = try await Application.make(peerID: .ephemeral())
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        app.redis.configuration = redisConfig
+
+        try await app.startup()
+
+        do {
+            let date = Date(timeIntervalSince1970: 10_000_000_000)
+            let isoDate = ISO8601DateFormatter().string(from: date)
+
+            try await app.redis.set("test", toJSON: date, jsonEncoder: encoder)
+            let rawValue = try #require(
+                try await app.redis.get("test", asJSON: String.self)
+            )
+            #expect(rawValue == isoDate)
+            let value = try #require(
+                try await app.redis.get("test", asJSON: Date.self, jsonDecoder: decoder)
+            )
+            #expect(value == date)
+        } catch {
+            Issue.record(error)
+        }
+
+        try await app.asyncShutdown()
     }
 }
 

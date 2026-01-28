@@ -29,8 +29,8 @@ extension RedisClient {
         jsonDecoder: JSONDecoder = JSONDecoder()
     ) -> EventLoopFuture<D?>
     where D: Decodable {
-        return self.get(key, as: Data.self).flatMapThrowing { data in
-            return try data.flatMap { try jsonDecoder.decode(D.self, from: $0) }
+        self.get(key, as: Data.self).flatMapThrowing { data in
+            try data.flatMap { try jsonDecoder.decode(D.self, from: $0) }
         }
     }
 

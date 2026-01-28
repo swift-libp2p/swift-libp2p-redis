@@ -69,7 +69,7 @@ extension RedisSessionsDelegate {
     }
 
     public func makeRedisKey(for session: SessionID) -> RedisKey {
-        return "vrs-\(session.string)"
+        "vrs-\(session.string)"
     }
 }
 
@@ -86,14 +86,14 @@ extension Application.Redis {
         public func makeDriver<Delegate: RedisSessionsDelegate>(
             delegate: Delegate
         ) -> some SessionDriver {
-            return RedisSessionsDriver(delegate: delegate)
+            RedisSessionsDriver(delegate: delegate)
         }
 
         /// Factory method that creates a new Redis Session driver with the default delegate.
         ///
         /// See `RedisSessionsDelegate`.
         public func makeDriver() -> some SessionDriver {
-            return RedisSessionsDriver(
+            RedisSessionsDriver(
                 delegate: DefaultSessionsDriverDelegate()
             )
         }
@@ -113,7 +113,7 @@ extension Application.Sessions.Provider {
     public static func redis<Delegate: RedisSessionsDelegate>(
         delegate: Delegate
     ) -> Self {
-        return .init {
+        .init {
             $0.sessions.use { $0.redis.sessions.makeDriver(delegate: delegate) }
         }
     }
@@ -129,7 +129,10 @@ internal struct RedisSessionsDriver<Delegate: RedisSessionsDelegate>:
     @usableFromInline
     internal init(delegate: Delegate) { self.delegate = delegate }
 
-    public func createSession(_ data: SessionData, for request: Request)
+    public func createSession(
+        _ data: SessionData,
+        for request: Request
+    )
         -> EventLoopFuture<SessionID>
     {
         let id = self.delegate.makeNewID()
@@ -139,7 +142,10 @@ internal struct RedisSessionsDriver<Delegate: RedisSessionsDelegate>:
             .map { id }
     }
 
-    public func readSession(_ sessionID: SessionID, for request: Request)
+    public func readSession(
+        _ sessionID: SessionID,
+        for request: Request
+    )
         -> EventLoopFuture<SessionData?>
     {
         let key = self.delegate.makeRedisKey(for: sessionID)
@@ -157,7 +163,10 @@ internal struct RedisSessionsDriver<Delegate: RedisSessionsDelegate>:
             .map { sessionID }
     }
 
-    public func deleteSession(_ sessionID: SessionID, for request: Request)
+    public func deleteSession(
+        _ sessionID: SessionID,
+        for request: Request
+    )
         -> EventLoopFuture<Void>
     {
         let key = self.delegate.makeRedisKey(for: sessionID)
@@ -173,7 +182,7 @@ private struct DefaultSessionsDriverDelegate: RedisSessionsDelegate {
         store data: SessionData,
         with key: RedisKey
     ) -> EventLoopFuture<Void> {
-        return client.set(key, toJSON: data)
+        client.set(key, toJSON: data)
     }
 
     @inlinable
@@ -181,6 +190,6 @@ private struct DefaultSessionsDriverDelegate: RedisSessionsDelegate {
         _ client: Client,
         fetchDataFor key: RedisKey
     ) -> EventLoopFuture<SessionData?> {
-        return client.get(key, asJSON: SessionData.self)
+        client.get(key, asJSON: SessionData.self)
     }
 }

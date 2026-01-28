@@ -27,13 +27,14 @@ extension RedisID {
     fileprivate static let two: RedisID = "two"
 }
 
-@Suite("Multiple Redis Tests")
+@Suite("Multiple Redis Tests", .serialized)
 struct MultipleRedisTests {
 
     var redisConfig: RedisConfiguration!
     var redisConfig2: RedisConfiguration!
 
     init() throws {
+        #if os(Linux)
         redisConfig = try RedisConfiguration(
             hostname: Environment.get("REDIS_HOSTNAME") ?? "localhost",
             port: Environment.get("REDIS_PORT")?.int ?? 6379,
@@ -44,6 +45,18 @@ struct MultipleRedisTests {
             port: Environment.get("REDIS_PORT_2")?.int ?? 6380,
             pool: .init(connectionRetryTimeout: .milliseconds(100))
         )
+        #else
+        redisConfig = try RedisConfiguration(
+            hostname: "localhost",
+            port: 6379,
+            pool: .init(connectionRetryTimeout: .milliseconds(100))
+        )
+        redisConfig2 = try RedisConfiguration(
+            hostname: "localhost",
+            port: 6380,
+            pool: .init(connectionRetryTimeout: .milliseconds(100))
+        )
+        #endif
     }
 
     @Test func testApplicationRedis() throws {
@@ -62,6 +75,41 @@ struct MultipleRedisTests {
         let info2 = try app.redis(.two).send(command: "INFO").wait()
         let info2String = try #require(info2.string)
         #expect(info2String.contains("redis_version"))
+
+        try app.redis(.one).set("name", to: "redis1").wait()
+        try app.redis(.two).set("name", to: "redis2").wait()
+
+        #expect(try app.redis(.one).get("name").wait().string == "redis1")
+        #expect(try app.redis(.two).get("name").wait().string == "redis2")
+    }
+
+    @Test func testApplicationRedis_Async() async throws {
+        let app = try await Application.make(peerID: .ephemeral())
+
+        app.redis(.one).configuration = redisConfig
+        app.redis(.two).configuration = redisConfig2
+
+        try await app.startup()
+
+        do {
+            let info1 = try await app.redis(.one).send(command: "INFO")
+            let info1String = try #require(info1.string)
+            #expect(info1String.contains("redis_version"))
+
+            let info2 = try await app.redis(.two).send(command: "INFO")
+            let info2String = try #require(info2.string)
+            #expect(info2String.contains("redis_version"))
+
+            try await app.redis(.one).set("name", toJSON: "redis1")
+            try await app.redis(.two).set("name", toJSON: "redis2")
+
+            #expect(try await app.redis(.one).get("name", asJSON: String.self) == "redis1")
+            #expect(try await app.redis(.two).get("name", asJSON: String.self) == "redis2")
+        } catch {
+            Issue.record(error)
+        }
+
+        try await app.asyncShutdown()
     }
 
     //func testSetAndGet() throws {

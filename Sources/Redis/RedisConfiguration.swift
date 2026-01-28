@@ -41,8 +41,7 @@ public struct RedisConfiguration: Sendable {
         public var connectionBackoffFactor: Float32
         public var initialConnectionBackoffDelay: TimeAmount
         public var connectionRetryTimeout: TimeAmount?
-        public var onUnexpectedConnectionClose:
-            (@Sendable (RedisConnection) -> Void)?
+        public var onUnexpectedConnectionClose: (@Sendable (RedisConnection) -> Void)?
 
         @preconcurrency
         public init(
