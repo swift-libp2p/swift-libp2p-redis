@@ -68,11 +68,15 @@ jobs:
         run: swift --version
       - name: Install Redis
         run: brew install redis@${{ matrix.redis-version }}
-      - name: Start Redis
-        run: brew services start redis
       # Build in debug mode
       - name: Build
         run: swift build
+      #- name: Start Redis
+      #  run: brew services start redis
+      - name: Start First Redis Server
+        run: redis-server .github/redis1.conf
+      - name: Start Second Redis Server
+        run: redis-server .github/redis2.conf
       # Test in debug mode
       - name: Test Debug
         run: swift test
