@@ -53,7 +53,7 @@ struct MultipleRedisTests {
         )
         redisConfig2 = try RedisConfiguration(
             hostname: "localhost",
-            port: 6379,
+            port: 6380,
             pool: .init(connectionRetryTimeout: .milliseconds(100))
         )
         #endif
