@@ -71,8 +71,8 @@ jobs:
       # Build in debug mode
       - name: Build
         run: swift build
-      #- name: Start Redis
-      #  run: brew services start redis
+      # - name: Start Redis
+      # run: brew services start redis
       - name: Start First Redis Server
         run: redis-server .github/redis1.conf
       - name: Start Second Redis Server
