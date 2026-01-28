@@ -91,19 +91,25 @@ struct MultipleRedisTests {
 
         try await app.startup()
 
-        let info1 = try await app.redis(.one).send(command: "INFO")
-        let info1String = try #require(info1.string)
-        #expect(info1String.contains("redis_version"))
+        do {
+            let info1 = try await app.redis(.one).send(command: "INFO")
+            let info1String = try #require(info1.string)
+            #expect(info1String.contains("redis_version"))
 
-        let info2 = try await app.redis(.two).send(command: "INFO")
-        let info2String = try #require(info2.string)
-        #expect(info2String.contains("redis_version"))
+            let info2 = try await app.redis(.two).send(command: "INFO")
+            let info2String = try #require(info2.string)
+            #expect(info2String.contains("redis_version"))
 
-        try await app.redis(.one).set("name", toJSON: "redis1")
-        try await app.redis(.two).set("name", toJSON: "redis2")
+            try await app.redis(.one).set("name", toJSON: "redis1")
+            try await app.redis(.two).set("name", toJSON: "redis2")
 
-        #expect(try await app.redis(.one).get("name", asJSON: String.self) == "redis1")
-        #expect(try await app.redis(.two).get("name", asJSON: String.self) == "redis2")
+            #expect(try await app.redis(.one).get("name", asJSON: String.self) == "redis1")
+            #expect(try await app.redis(.two).get("name", asJSON: String.self) == "redis2")
+        } catch {
+            Issue.record(error)
+        }
+
+        try await app.asyncShutdown()
     }
 
     //func testSetAndGet() throws {
