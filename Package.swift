@@ -32,7 +32,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/swift-libp2p/swift-libp2p.git",
-            branch: "app+caches"
+            branch: "main"
         ),
     ],
     targets: [
