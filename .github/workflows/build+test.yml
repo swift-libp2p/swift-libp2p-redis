@@ -8,6 +8,4 @@ on:
 jobs:
   tests:
     name: Tests
-    uses: swift-libp2p/swift-libp2p-redis/.github/workflows/pull_request.yml@main
-    with:
-      branch: "main"
+    uses: swift-libp2p/swift-libp2p-redis/.github/workflows/pull_request.yml@workflow-tests
