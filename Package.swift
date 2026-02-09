@@ -28,11 +28,11 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/swift-server/RediStack.git",
-            from: "1.4.1"
+            .upToNextMajor(from: "1.4.1")
         ),
         .package(
             url: "https://github.com/swift-libp2p/swift-libp2p.git",
-            branch: "main"
+            .upToNextMinor(from: "0.3.4")
         ),
     ],
     targets: [
